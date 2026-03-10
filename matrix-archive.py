@@ -46,6 +46,7 @@ from nio import (
     AsyncClientConfig,
     MatrixRoom,
     MessageDirection,
+    ReactionEvent,
     RedactedEvent,
     RoomEncryptedMedia,
     RoomMessage,
@@ -331,10 +332,11 @@ async def download_mxc(client: AsyncClient, url: str):
 
 
 def is_valid_event(event):
-    events = (RoomMessageFormatted, RedactedEvent)
-    if not ARGS.no_media:
-        events += (RoomMessageMedia, RoomEncryptedMedia)
-    return isinstance(event, events)
+    if isinstance(event, (RedactedEvent, ReactionEvent, RoomMessage)):
+        if ARGS.no_media and isinstance(event, (RoomMessageMedia, RoomEncryptedMedia)):
+            return False
+        return True
+    return False
 
 
 async def fetch_room_events(
